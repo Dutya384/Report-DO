@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard Pengiriman Interaktif</title>
+<style>
+:root{--bg:#f4f6f9;--cd:#fff;--tx:#1c2430;--mu:#6b7686;--ac:#0f766e;--ac2:#14b8a6;--bd:#e3e8ef;--wa:#b45309;--wb:#fef3c7;--bt:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#10161d;--cd:#18212b;--tx:#e8edf3;--mu:#93a0b2;--ac:#2dd4bf;--ac2:#0f766e;--bd:#263241;--wa:#fcd34d;--wb:#3a2f10;--bt:#10161d}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 system-ui,sans-serif;padding:16px}
+.w{max-width:1150px;margin:auto}h1{font-size:20px;margin:0}.sub,.st{color:var(--mu);font-size:12px}
+header{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-bottom:12px}
+.bt{display:flex;gap:6px;flex-wrap:wrap}
+button{background:var(--ac);color:var(--bt);border:0;border-radius:8px;padding:6px 11px;cursor:pointer;font-size:12px}button.g2{background:var(--bd);color:var(--tx)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#f59e0b;margin-right:6px}.dot.on{background:#22c55e}
+.g{display:grid;gap:12px;margin-bottom:12px}.k{grid-template-columns:repeat(auto-fit,minmax(145px,1fr))}.c2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.cd{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}.g .cd{margin:0}
+.kv{font-size:24px;font-weight:700}.kl{color:var(--mu);font-size:12px}
+h2{font-size:12px;margin:0 0 10px;color:var(--mu);text-transform:uppercase;letter-spacing:.04em}
+.b{display:grid;grid-template-columns:110px 1fr minmax(28px,auto);gap:8px;align-items:center;margin:3px 0;font-size:12px;cursor:pointer;padding:2px 4px;border-radius:6px}
+.b:hover,tr[data-k]:hover{background:var(--bd)}.b.on,tr.on{outline:2px solid var(--ac)}
+.b span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.b span:last-child{text-align:right;font-weight:600}
+.tr{background:var(--bd);border-radius:5px;height:13px}.fl{height:100%;background:linear-gradient(90deg,var(--ac2),var(--ac));border-radius:5px;transition:width .3s}
+input,select{padding:6px 9px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:12px;max-width:100%}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{background:var(--wb);color:var(--wa);border-radius:99px;padding:2px 9px;font-size:12px;cursor:pointer}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:12px;min-width:680px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--bd)}th{color:var(--mu);cursor:pointer;white-space:nowrap}
+.n{text-align:right;white-space:nowrap}.tag{background:var(--wb);color:var(--wa);border-radius:5px;padding:1px 6px;font-size:11px}.em{color:var(--mu);padding:8px 0;font-size:12px}
+.sp{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}.sp label{font-size:12px;color:var(--mu);display:block}.sp input,.sp select{width:100%}
+[hidden]{display:none!important}
+</style></head><body><div class="w">
+<header><div><h1>📦 Dashboard Pengiriman &amp; Belanja</h1><div class="st"><span class="dot" id="dot"></span><span id="stx">Memuat…</span></div></div>
+<div class="bt"><button id="rf">⟳ Refresh</button><button class="g2" id="sg">⚙ Pengaturan</button><button class="g2" id="i1">Impor CSV Pengiriman</button><button class="g2" id="i2">Impor CSV Belanja</button><button class="g2" id="ex">⬇ Ekspor CSV</button></div></header>
+<input type="file" id="fi" accept=".csv,text/csv" hidden>
+<div class="cd bar"><b>🔗 Link Spreadsheet</b><input id="lk" placeholder="Tempel link Google Spreadsheet di sini, lalu klik OK…" style="flex:1;min-width:240px"><button id="ok">OK / Muat Data</button></div>
+<div class="cd" id="sp" hidden><h2>Pengaturan</h2><div class="sp">
+<div><label>ID Spreadsheet</label><input id="cId"></div><div><label>Nama tab pengiriman</label><input id="cS1"></div><div><label>Nama tab belanja (opsional)</label><input id="cS2"></div>
+<div><label>Auto-refresh (detik)</label><input id="cSec" type="number" min="10"></div><div><label>Kolom nilai belanja (di tab pengiriman)</label><select id="cV"></select></div></div>
+<div style="margin-top:10px"><button id="sv">Simpan &amp; muat ulang</button></div></div>
+<div class="cd bar"><input id="q" placeholder="🔍 Cari nama / receipt / alamat…"><select id="fK"></select><select id="fC"></select><select id="fH"></select>
+<select id="mt"><option value="n">Grafik: jumlah pengiriman</option><option value="r">Grafik: Rp belanja</option></select><span id="ch" class="bar"></span></div>
+<div class="g k" id="kpi"></div>
+<div class="g c2"><div class="cd"><h2>Top Customer</h2><div id="cT"></div></div><div class="cd"><h2>Kota / Kabupaten</h2><div id="cK"></div></div></div>
+<div class="g c2"><div class="cd"><h2>Per Hari</h2><div id="cD"></div></div><div class="cd"><h2>Top Kecamatan</h2><div id="cC"></div></div></div>
+<div class="g c2"><div class="cd"><h2>Top Kelurahan</h2><div id="cL"></div></div>
+<div class="cd"><h2>Rekap Pelanggan (klik untuk filter)</h2><div class="tw" style="max-height:260px;overflow:auto"><table style="min-width:0"><thead><tr><th>Customer</th><th>Kirim</th><th class="n">Total Belanja</th></tr></thead><tbody id="tc"></tbody></table></div></div></div>
+<div class="cd"><h2>Data Pengiriman <span id="cn"></span></h2><div class="tw"><table><thead><tr><th data-s="ts">Waktu</th><th data-s="rc">Receipt</th><th data-s="nm">Customer</th><th data-s="kota">Kota/Kab</th><th data-s="kec">Kecamatan</th><th data-s="kel">Kelurahan</th><th data-s="tot" class="n">Total Belanja</th><th data-s="al">Alamat</th></tr></thead><tbody id="tb"></tbody></table></div>
+<div style="margin-top:8px"><button class="g2" id="mo">Tampilkan lebih banyak</button></div></div>
+</div>
+<script>
+const $=id=>document.getElementById(id),LS={g:k=>{try{return localStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const CFG=Object.assign({id:'1GZd_o0CUXiTLldW524EeqccTuUUd6qXzIenIKU1gAMc',s1:'Form Responses 1',s2:'Copas belanja',sec:30,vc:''},JSON.parse(LS.g('cfg')||'{}'));
+const KOTA={T:'Kota Tasikmalaya',KT:'Kab. Tasikmalaya',KC:'Kab. Ciamis'};
+const mk=(ts,rc,k,kec,nm,al,kel)=>({ts,d:pd(ts),day:ts.slice(0,10),rc,kota:KOTA[k],kec,nm,al,kel,val:null});
+function pd(s){const m=/(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):(\d+)/.exec(s);return m?new Date(+m[3],m[2]-1,+m[1],+m[4],+m[5],+m[6]):new Date(0)}
+let DATA=`25/11/2026 20:34:37|A9.2.20260914.30|T|Purbaratu|Andri Heryanto|JL K.H. TUBAGUS ABDULLAH NO.288|Sukaasih
+25/11/2026 20:36:39|A384.2.260915.43|T|Mangkubumi|BPK.SYAMSUL|PERUM BAITULMARHAMAH I BLOK B 12|Sambongjaya
+25/11/2026 20:40:16|A384.78.260915.53|T|Cihideung|Marcelino Alexander|PERUM GRIYA PARAHYANGAN B 11|Tugujaya
+25/11/2026 20:42:01|A384.1.260916.5|T|Cipedes|David Abdul Kodir|SDN LEUWIANYAR TASIKMALAYA|Sukamanah
+25/11/2026 21:05:05|A384.2.260916.12|T|Cibeureum|Nia Daniyati|KOMPLEK PESANTREN AL KHOERIYAH|Ciherang
+25/11/2026 21:09:30|A384.1.260916.33|T|Tawang|BPK DIAN MARDIANSYAH|LAB PERTANIAN UNPER|Kahuripan
+25/11/2026 21:12:28|RRRA1C22D6A|T|Cipedes|BPK HEN HEN|GREEN SYFA RESIDANCE|Nagarasari
+25/11/2026 21:15:29|A384.1.260916.56|KT|Sukarame|Humaira|PONDOK PESANTREN SUKAHIDENG|Sukarapih
+25/11/2026 21:18:15|RRRO1D08M2K|T|Mangkubumi|Imam Mardani Rahman|SDN 1 MANGKUBUMI|Mangkubumi
+25/11/2026 21:19:51|RRRO1C0K79Q|T|Mangkubumi|Rahmat|GUNTING RAMBUT SINAR|Sambongjaya
+25/11/2026 21:21:18|A384.1.260917.42|T|Tawang|Rizka Dwi Fauziah|RIZKAHIJAB WAREHOUSE|Kahuripan
+26/11/2026 11:13:15|A384.1.260918.67|T|Bungursari|Yati|JL RANCAGENENG 2|Sukamulya
+26/11/2026 11:15:07|A384.1.260918.72|T|Mangkubumi|Mia Mentari D|ROYAL MEDINA BLOK SAVILLA 5|Cipari
+26/11/2026 11:16:38|A384.2.260919.27|T|Bungursari|Annisa Navilah|PERUM SUKARINDIK INDAH B-34|Sukarindik
+26/11/2026 11:17:56|A384.2.260919.27|T|Bungursari|Annisa Navilah|PERUM SUKARINDIK INDAH B-34|Sukarindik
+26/11/2026 11:51:55|A384.1.260917.5|KT|Singaparna|Hj Ipit Pitria Kurniasih|CIPAKAT SINGAPARNA|Cipakat
+26/11/2026 11:54:10|A384.2.260919.61|KT|Singaparna|Hilda firdiyani|KP.CIPAKAT|Cipakat
+26/11/2026 11:55:54|A384.1.260917.37|T|Cipedes|Ayu Andini Munadi|SDN 4 SUKAMANAH|Sukamanah
+26/11/2026 11:57:57|A384.3.260919.17|T|Mangkubumi|Siti Novianti Skm|PERUM WIJAYA PERMAI II E-7|Sambongjaya
+26/11/2026 11:59:38|A384.1.260920.26|KT|Mangunreja|BIDAN NENENG|APOTEK BEBEDAHAN|Sukasukur
+26/11/2026 12:00:54|A384.1.260920.65|T|Kawalu|Tanti Mulya Jaya|TOKO BESI SUMBER BAJA|Karsamenak
+26/11/2026 12:02:12|A384.1.260920.68|T|Cipedes|Drs Adid Suryadi|KP.CICARIU GAPURA II 5|Nagarasari
+26/11/2026 12:03:41|A384.1.260920.82|T|Mangkubumi|De Bibah Jenabiah|KEBUN MATAHARI HERBAL TV|Sambongjaya
+26/11/2026 12:04:59|A384.90.260921.1|T|Cihideung|Meli Kamelia|TOKO LISTRIK SINAR SURYA|Tuguraja
+26/11/2026 12:06:58|A384.1.260921.74|T|Mangkubumi|Mia Mentari D|ROYAL MEDINA BLOK SAVILLA 5|Cipari
+26/11/2026 12:08:41|A384.2.260922.14|T|Cipedes|Ibu Endang Rahayu|PRODIA TASIKMALAYA|Panglayungan
+26/11/2026 12:09:54|A384.2.260922.15|T|Cibeureum|Panji Budiman|JL CIKAWUNG NO.67|Awipari
+26/11/2026 12:11:33|A384.1.260924.16|KC|Panumbangan|Arie Risdiana|KLINIK SETIA MEDIKA|Medanglayang
+26/11/2026 12:12:52|A384.2.260925.20|KC|Jatinagara|Bunga Isnaini|DSN.KULON DS.BAYASARI|Bayasari
+26/11/2026 12:17:22|A384.2.260925.30|T|Mangkubumi|Neng Fitry Nurfaidah|JL CIKUNTEN INDAH|Sambongjaya
+26/11/2026 13:35:04|A384.90.260925.2|T|Mangkubumi|De Bibah Jenabiah|KEBUN MATAHARI HERBAL TV|Sambongjaya`.split('\n').map(l=>mk(...l.split('|')));
+let TOT=null,INFO='',VALH='',LBL=[],LIVE=false,LOCK=false,IMP='1',MET='n',LIM=15,SORT={k:'ts',d:-1},F={q:'',kota:'',kec:'',day:'',kel:'',cust:''},TM;
+const nz=s=>String(s||'').trim().toUpperCase(),rp=n=>'Rp '+Math.round(n).toLocaleString('id-ID'),
+ rpS=n=>n>=1e6?(n/1e6).toFixed(1).replace('.',',')+' jt':n>=1e3?Math.round(n/1e3)+' rb':String(Math.round(n)),
+ esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function parseCSV(t){const r=[];let w=[],f='',q=0;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=0}else f+=c}else if(c=='"')q=1;else if(c==',')w.push(f),f='';else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;w.push(f);r.push(w);w=[];f=''}else f+=c}if(f||w.length){w.push(f);r.push(w)}return r}
+function num(s){s=String(s||'').replace(/[^\d.,-]/g,'');if(!/\d/.test(s))return NaN;const d=s.lastIndexOf('.'),c=s.lastIndexOf(',');
+ if(d>=0&&c>=0){const m=Math.max(d,c);return parseFloat(s.slice(0,m).replace(/[.,]/g,'')+'.'+s.slice(m+1))}
+ const p=d>=0?'.':c>=0?',':'';if(p){const q=s.split(p);if(q.length>2||q[1].length===3)return parseFloat(q.join(''));return parseFloat(q[0]+'.'+q[1])}return parseFloat(s)}
+function fromCSV(txt){const rows=parseCSV(txt),h=rows[0].map(x=>x.trim());LBL=h.map((x,i)=>x||'kolom '+(i+1));
+ const ix=s=>h.findIndex(x=>x.toLowerCase().includes(s)),kec=h.map((x,i)=>/^Pilih Kecamatan/.test(x)?i:-1).filter(i=>i>=0),kel=h.map((x,i)=>/^Kelurahan dalam/.test(x)?i:-1).filter(i=>i>=0);
+ const iR=ix('receipt'),iK=ix('kota / kabupaten'),iN=ix('nama customer'),iA=ix('alamat kirim dan'),fs=(r,a)=>{for(const i of a)if(r[i]&&r[i].trim())return r[i].trim();return''};
+ let iV=CFG.vc?LBL.indexOf(CFG.vc):-1;
+ if(iV<0)iV=h.findIndex(x=>/total|nominal|value|nilai|rupiah|\brp\b|harga/i.test(x)&&!/kelurahan|pilih|bulan|receipt|member|alamat/i.test(x));
+ if(iV<0){const st=Math.max(...kel);for(let i=h.length-1;i>st&&iV<0;i--)if(rows.slice(1).some(r=>r[i]&&!isNaN(num(r[i]))))iV=i}
+ VALH=iV>=0?LBL[iV]:'';
+ return rows.slice(1).filter(r=>r[0]&&r[0].trim()).map(r=>({ts:r[0].trim(),d:pd(r[0]),day:r[0].trim().slice(0,10),rc:(r[iR]||'').trim(),kota:(r[iK]||'').trim(),kec:fs(r,kec),nm:(r[iN]||'').trim(),al:(r[iA]||'').trim(),kel:fs(r,kel),val:iV>=0&&r[iV]&&r[iV].trim()?num(r[iV]):null}))}
+function sumTotals(txt){const rows=parseCSV(txt),keys=new Set(DATA.map(x=>nz(x.rc)).filter(Boolean));let hi=-1,ti=-1;
+ for(const re of[/^\s*total\s*$/i,/total|nominal|value|nilai/i])for(let i=0;i<Math.min(rows.length,20)&&hi<0;i++){const j=rows[i].findIndex(c=>re.test(c));if(j>=0){hi=i;ti=j}}
+ if(ti<0)throw new Error('kolom Total tidak ditemukan');const m={};let n=0;
+ rows.slice(hi+1).forEach(r=>{const k=r.map(nz).find(c=>keys.has(c));if(!k)return;const v=num(r[ti]);if(isNaN(v))return;m[k]=(m[k]||0)+v;n++});
+ INFO=n+' baris cocok';return m}
+function enrich(){if(!TOT&&DATA.some(x=>x.val!=null&&!isNaN(x.val)))TOT={};const s=new Set();DATA.forEach(x=>{const k=nz(x.rc);x.tot=x.val!=null&&!isNaN(x.val)?x.val:(TOT&&k in TOT?TOT[k]:null);x.cnt=x.tot!=null&&!s.has(k);s.add(k)})}
+const agg=(a,f,m)=>{const o={};a.forEach(x=>{const k=f(x)||'-';o[k]=(o[k]||0)+(m=='r'?(x.cnt?x.tot:0):1)});return Object.entries(o).sort((a,b)=>b[1]-a[1])};
+function bars(el,e,n,fm,key){const t=e.filter(v=>v[1]>0).slice(0,n),mx=t[0]?t[0][1]:1;
+ $(el).innerHTML=t.length?t.map(([k,v])=>`<div class="b${F[key]===k?' on':''}" data-k="${key}" data-v="${esc(k)}"><span title="${esc(k)}">${esc(k)}</span><div class="tr"><div class="fl" style="width:${v/mx*100}%"></div></div><span>${fm?fm(v):v}</span></div>`).join(''):'<div class="em">'+(MET=='r'&&!TOT?'Nilai belanja belum terbaca':'Tidak ada data')+'</div>'}
+function fill(id,l,lab,v){$(id).innerHTML=`<option value="">${lab}</option>`+l.map(x=>`<option${x==v?' selected':''}>${esc(x)}</option>`).join('')}
+const uniq=f=>[...new Set(DATA.map(f).filter(Boolean))].sort();
+function render(){enrich();
+ const d=DATA.filter(x=>(!F.kota||x.kota==F.kota)&&(!F.kec||x.kec==F.kec)&&(!F.kel||x.kel==F.kel)&&(!F.day||x.day==F.day)&&(!F.cust||x.nm==F.cust)&&(!F.q||(x.nm+x.rc+x.al+x.kec+x.kel).toLowerCase().includes(F.q)));
+ fill('fK',uniq(x=>x.kota),'Semua kota/kab',F.kota);fill('fC',uniq(x=>x.kec),'Semua kecamatan',F.kec);fill('fH',[...new Set(DATA.map(x=>x.day))].sort((a,b)=>pd(b+' 0:0:0')-pd(a+' 0:0:0')),'Semua hari',F.day);
+ $('ch').innerHTML=Object.entries(F).filter(([k,v])=>v).map(([k,v])=>`<span class="chip" data-x="${k}">${k}: ${esc(v)} ✕</span>`).join('');
+ const ok=d.filter(x=>x.cnt),sum=ok.reduce((a,x)=>a+x.tot,0),nr=new Set(d.map(x=>nz(x.rc))).size,ms=new Set(d.filter(x=>TOT&&x.tot==null).map(x=>nz(x.rc))).size,
+ dup=agg(d,x=>x.rc,'n').filter(e=>e[1]>1).length,tdy=new Date().toLocaleDateString('en-GB');
+ const K=[['Total Belanja',TOT?rp(sum):'-'],['Rata-rata / Receipt',TOT&&ok.length?rp(sum/ok.length):'-'],['Receipt Cocok',TOT?ok.length+' / '+nr:'-'],['Belum Ada Nilai',TOT?ms:'-'],['Pengiriman',d.length],['Hari Ini',d.filter(x=>x.day==tdy).length],['Customer Unik',new Set(d.map(x=>x.nm.toLowerCase())).size],['Receipt Dobel',dup]];
+ $('kpi').innerHTML=K.map(([l,v])=>`<div class="cd"><div class="kv" style="${String(v).length>10?'font-size:17px;padding:5px 0':''}">${esc(v)}</div><div class="kl">${l}</div></div>`).join('');
+ const fm=MET=='r'?rpS:null;
+ bars('cT',agg(d,x=>x.nm,TOT?'r':'n'),8,TOT?rpS:null,'cust');bars('cK',agg(d,x=>x.kota,MET),6,fm,'kota');
+ bars('cD',agg(d,x=>x.day,MET).sort((a,b)=>pd(b[0]+' 0:0:0')-pd(a[0]+' 0:0:0')),7,fm,'day');bars('cC',agg(d,x=>x.kec,MET),8,fm,'kec');bars('cL',agg(d,x=>x.kel,MET),8,fm,'kel');
+ const cu={};d.forEach(x=>{const o=cu[x.nm||'-']||(cu[x.nm||'-']={n:0,t:0,c:0});o.n++;if(x.cnt){o.t+=x.tot;o.c++}});
+ $('tc').innerHTML=Object.entries(cu).sort((a,b)=>b[1].t-a[1].t||b[1].n-a[1].n).slice(0,60).map(([k,o])=>`<tr data-k="cust" data-v="${esc(k)}" class="${F.cust==k?'on':''}" style="cursor:pointer"><td>${esc(k)}</td><td>${o.n}</td><td class="n">${TOT?(o.c?rp(o.t):'-'):'-'}</td></tr>`).join('');
+ const dp=new Set(agg(DATA,x=>x.rc,'n').filter(e=>e[1]>1).map(e=>e[0])),sv=x=>SORT.k=='ts'?x.d:SORT.k=='tot'?(x.tot??-1):String(x[SORT.k]||'').toLowerCase();
+ const rows=[...d].sort((a,b)=>(sv(a)>sv(b)?1:sv(a)<sv(b)?-1:0)*SORT.d);window.ROWS=rows;$('cn').textContent='('+rows.length+')';
+ $('tb').innerHTML=rows.slice(0,LIM).map(x=>`<tr><td>${esc(x.ts)}</td><td>${esc(x.rc)}${dp.has(x.rc)?' <span class="tag">dobel</span>':''}</td><td>${esc(x.nm)}</td><td>${esc(x.kota)}</td><td>${esc(x.kec)}</td><td>${esc(x.kel)}</td><td class="n">${x.tot!=null?rp(x.tot):(TOT?'<span class="tag">kosong</span>':'-')}</td><td>${esc(x.al)}</td></tr>`).join('')||'<tr><td colspan="8" class="em">Tidak ada data</td></tr>';
+ $('mo').hidden=rows.length<=LIM;
+ $('cV').innerHTML='<option value="">(otomatis)</option>'+LBL.map(l=>`<option${l==CFG.vc?' selected':''}>${esc(l)}</option>`).join('')}
+function st(on,m){$('dot').className='dot'+(on?' on':'');$('stx').textContent=m}
+const U=s=>`https://docs.google.com/spreadsheets/d/${CFG.id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(s)}&t=${Date.now()}`;
+async function load(){if(LOCK)return;
+ try{const r=await fetch(U(CFG.s1),{cache:'no-store'});if(!r.ok)throw 0;DATA=fromCSV(await r.text());LIVE=true;let ti='';
+  if(CFG.s2)try{const r2=await fetch(U(CFG.s2),{cache:'no-store'});if(!r2.ok)throw 0;TOT=sumTotals(await r2.text());ti=' • tab belanja: '+INFO}catch(e){TOT=null}
+  st(1,'Live '+new Date().toLocaleTimeString('id-ID')+(VALH?' • nilai belanja dari kolom "'+VALH+'"':TOT?'':' • nilai belanja TIDAK terdeteksi → pilih kolom di ⚙ Pengaturan')+ti)}
+ catch(e){st(0,LIVE?'Gagal refresh, memakai data terakhir':'Gagal mengambil data. Pastikan spreadsheet dibagikan ke \u201cAnyone with the link\u201d, dan file ini dibuka langsung di browser (bukan preview chat). Alternatif: tombol Impor CSV')}
+ render()}
+const R=()=>{LIM=15;render()};
+document.addEventListener('click',e=>{let t=e.target.closest('[data-k]');if(t){const k=t.dataset.k,v=t.dataset.v;F[k]=F[k]===v?'':v;return R()}
+ t=e.target.closest('[data-x]');if(t){F[t.dataset.x]='';if(t.dataset.x=='q')$('q').value='';return R()}
+ t=e.target.closest('[data-s]');if(t){SORT={k:t.dataset.s,d:SORT.k==t.dataset.s?-SORT.d:-1};render()}});
+$('q').oninput=e=>{F.q=e.target.value.toLowerCase();R()};$('fK').onchange=e=>{F.kota=e.target.value;R()};$('fC').onchange=e=>{F.kec=e.target.value;R()};$('fH').onchange=e=>{F.day=e.target.value;R()};
+$('mt').onchange=e=>{MET=e.target.value;render()};$('mo').onclick=()=>{LIM+=20;render()};$('rf').onclick=()=>{LOCK=false;load()};
+$('sg').onclick=()=>{$('cId').value=CFG.id;$('cS1').value=CFG.s1;$('cS2').value=CFG.s2;$('cSec').value=CFG.sec;$('sp').hidden=!$('sp').hidden};
+$('sv').onclick=()=>{CFG.id=$('cId').value.trim();CFG.s1=$('cS1').value.trim();CFG.s2=$('cS2').value.trim();CFG.sec=+$('cSec').value||30;CFG.vc=$('cV').value;LS.s('cfg',JSON.stringify(CFG));LOCK=false;clearInterval(TM);TM=setInterval(load,CFG.sec*1000);load()};
+$('i1').onclick=()=>{IMP='1';$('fi').click()};$('i2').onclick=()=>{IMP='2';$('fi').click()};
+$('fi').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{if(IMP=='1'){DATA=fromCSV(rd.result);LOCK=true;st(0,'Data dari file impor (auto-refresh dimatikan) • nilai: '+(VALH||'belum terdeteksi'))}else{TOT=sumTotals(rd.result);st(0,'Impor belanja: '+INFO)}}catch(x){st(0,'Gagal impor: '+x.message)}render()};rd.readAsText(f);e.target.value=''};
+$('ex').onclick=()=>{const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',L=[['Waktu','Receipt','Customer','Kota','Kecamatan','Kelurahan','Total Belanja','Alamat'].map(q).join(',')].concat((window.ROWS||[]).map(x=>[x.ts,x.rc,x.nm,x.kota,x.kec,x.kel,x.tot??'',x.al].map(q).join(',')));
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+L.join('\n')],{type:'text/csv'}));a.download='pengiriman-filter.csv';a.click()};
+$('lk').value='https://docs.google.com/spreadsheets/d/'+CFG.id+'/edit';
+function setLink(){const m=/\/d\/([a-zA-Z0-9_-]{20,})/.exec($('lk').value);if(!m){st(0,'Link tidak valid. Contoh: https://docs.google.com/spreadsheets/d/XXXX/edit');return}
+ CFG.id=m[1];LS.s('cfg',JSON.stringify(CFG));LOCK=false;LIVE=false;TOT=null;F={q:'',kota:'',kec:'',day:'',kel:'',cust:''};$('q').value='';st(0,'Memuat data…');load()}
+$('ok').onclick=setLink;$('lk').onkeydown=e=>{if(e.key=='Enter')setLink()};
+load();TM=setInterval(load,CFG.sec*1000);
+</script></body></html>
