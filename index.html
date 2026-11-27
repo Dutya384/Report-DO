@@ -35,21 +35,21 @@ th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--bd)}th{color
 <div><label>ID Spreadsheet</label><input id="cId"></div><div><label>Nama tab pengiriman</label><input id="cS1"></div><div><label>Nama tab belanja (opsional)</label><input id="cS2"></div>
 <div><label>Auto-refresh (detik)</label><input id="cSec" type="number" min="10"></div><div><label>Kolom nilai belanja (di tab pengiriman)</label><select id="cV"></select></div></div>
 <div style="margin-top:10px"><button id="sv">Simpan &amp; muat ulang</button></div></div>
-<div class="cd bar"><input id="q" placeholder="🔍 Cari nama / receipt / alamat…"><select id="fK"></select><select id="fC"></select><select id="fH"></select>
+<div class="cd bar"><input id="q" placeholder="🔍 Cari nama / receipt / alamat…"><select id="fK"></select><select id="fC"></select><select id="fT"></select><select id="fB"></select>
 <select id="mt"><option value="n">Grafik: jumlah pengiriman</option><option value="r">Grafik: Rp belanja</option></select><span id="ch" class="bar"></span></div>
 <div class="g k" id="kpi"></div>
 <div class="g c2"><div class="cd"><h2>Top Customer</h2><div id="cT"></div></div><div class="cd"><h2>Kota / Kabupaten</h2><div id="cK"></div></div></div>
-<div class="g c2"><div class="cd"><h2>Per Hari</h2><div id="cD"></div></div><div class="cd"><h2>Top Kecamatan</h2><div id="cC"></div></div></div>
+<div class="g c2"><div class="cd"><h2>Per Hari</h2><div id="cD"></div></div><div class="cd"><h2>Top Kecamatan</h2><div id="cC"></div></div><div class="cd"><h2>Bulan Pembelanjaan</h2><div id="cB"></div></div></div>
 <div class="g c2"><div class="cd"><h2>Top Kelurahan</h2><div id="cL"></div></div>
 <div class="cd"><h2>Rekap Pelanggan (klik untuk filter)</h2><div class="tw" style="max-height:260px;overflow:auto"><table style="min-width:0"><thead><tr><th>Customer</th><th>Kirim</th><th class="n">Total Belanja</th></tr></thead><tbody id="tc"></tbody></table></div></div></div>
-<div class="cd"><h2>Data Pengiriman <span id="cn"></span></h2><div class="tw"><table><thead><tr><th data-s="ts">Waktu</th><th data-s="rc">Receipt</th><th data-s="nm">Customer</th><th data-s="kota">Kota/Kab</th><th data-s="kec">Kecamatan</th><th data-s="kel">Kelurahan</th><th data-s="tot" class="n">Total Belanja</th><th data-s="al">Alamat</th></tr></thead><tbody id="tb"></tbody></table></div>
+<div class="cd"><h2>Data Pengiriman <span id="cn"></span></h2><div class="tw"><table><thead><tr><th data-s="ts">Waktu</th><th data-s="rc">Receipt</th><th data-s="bl">Bulan Belanja</th><th data-s="nm">Customer</th><th data-s="kota">Kota/Kab</th><th data-s="kec">Kecamatan</th><th data-s="kel">Kelurahan</th><th data-s="tot" class="n">Total Belanja</th><th data-s="al">Alamat</th></tr></thead><tbody id="tb"></tbody></table></div>
 <div style="margin-top:8px"><button class="g2" id="mo">Tampilkan lebih banyak</button></div></div>
 </div>
 <script>
 const $=id=>document.getElementById(id),LS={g:k=>{try{return localStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 const CFG=Object.assign({id:'1GZd_o0CUXiTLldW524EeqccTuUUd6qXzIenIKU1gAMc',s1:'Form Responses 1',s2:'Copas belanja',sec:30,vc:''},JSON.parse(LS.g('cfg')||'{}'));
 const KOTA={T:'Kota Tasikmalaya',KT:'Kab. Tasikmalaya',KC:'Kab. Ciamis'};
-const mk=(ts,rc,k,kec,nm,al,kel)=>({ts,d:pd(ts),day:ts.slice(0,10),rc,kota:KOTA[k],kec,nm,al,kel,val:null});
+const mk=(ts,rc,k,kec,nm,al,kel)=>({ts,d:pd(ts),day:ts.slice(0,10),rc,kota:KOTA[k],kec,nm,al,kel,bln:'',val:null});
 function pd(s){const m=/(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):(\d+)/.exec(s);return m?new Date(+m[3],m[2]-1,+m[1],+m[4],+m[5],+m[6]):new Date(0)}
 let DATA=`25/11/2026 20:34:37|A9.2.20260914.30|T|Purbaratu|Andri Heryanto|JL K.H. TUBAGUS ABDULLAH NO.288|Sukaasih
 25/11/2026 20:36:39|A384.2.260915.43|T|Mangkubumi|BPK.SYAMSUL|PERUM BAITULMARHAMAH I BLOK B 12|Sambongjaya
@@ -82,7 +82,7 @@ let DATA=`25/11/2026 20:34:37|A9.2.20260914.30|T|Purbaratu|Andri Heryanto|JL K.H
 26/11/2026 12:12:52|A384.2.260925.20|KC|Jatinagara|Bunga Isnaini|DSN.KULON DS.BAYASARI|Bayasari
 26/11/2026 12:17:22|A384.2.260925.30|T|Mangkubumi|Neng Fitry Nurfaidah|JL CIKUNTEN INDAH|Sambongjaya
 26/11/2026 13:35:04|A384.90.260925.2|T|Mangkubumi|De Bibah Jenabiah|KEBUN MATAHARI HERBAL TV|Sambongjaya`.split('\n').map(l=>mk(...l.split('|')));
-let TOT=null,INFO='',VALH='',LBL=[],LIVE=false,LOCK=false,IMP='1',MET='n',LIM=15,SORT={k:'ts',d:-1},F={q:'',kota:'',kec:'',day:'',kel:'',cust:''},TM;
+let TOT=null,INFO='',VALH='',LBL=[],LIVE=false,LOCK=false,IMP='1',MET='n',LIM=15,SORT={k:'ts',d:-1},F={q:'',kota:'',kec:'',day:'',bln:'',thn:'',kel:'',cust:''},TM;
 const nz=s=>String(s||'').trim().toUpperCase(),rp=n=>'Rp '+Math.round(n).toLocaleString('id-ID'),
  rpS=n=>n>=1e6?(n/1e6).toFixed(1).replace('.',',')+' jt':n>=1e3?Math.round(n/1e3)+' rb':String(Math.round(n)),
  esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -92,26 +92,30 @@ function num(s){s=String(s||'').replace(/[^\d.,-]/g,'');if(!/\d/.test(s))return 
  const p=d>=0?'.':c>=0?',':'';if(p){const q=s.split(p);if(q.length>2||q[1].length===3)return parseFloat(q.join(''));return parseFloat(q[0]+'.'+q[1])}return parseFloat(s)}
 function fromCSV(txt){const rows=parseCSV(txt),h=rows[0].map(x=>x.trim());LBL=h.map((x,i)=>x||'kolom '+(i+1));
  const ix=s=>h.findIndex(x=>x.toLowerCase().includes(s)),kec=h.map((x,i)=>/^Pilih Kecamatan/.test(x)?i:-1).filter(i=>i>=0),kel=h.map((x,i)=>/^Kelurahan dalam/.test(x)?i:-1).filter(i=>i>=0);
- const iR=ix('receipt'),iK=ix('kota / kabupaten'),iN=ix('nama customer'),iA=ix('alamat kirim dan'),fs=(r,a)=>{for(const i of a)if(r[i]&&r[i].trim())return r[i].trim();return''};
+ const iB=h.findIndex(x=>/^bulan/i.test(x)),iR=ix('receipt'),iK=ix('kota / kabupaten'),iN=ix('nama customer'),iA=ix('alamat kirim dan'),fs=(r,a)=>{for(const i of a)if(r[i]&&r[i].trim())return r[i].trim();return''};
  let iV=CFG.vc?LBL.indexOf(CFG.vc):-1;
  if(iV<0)iV=h.findIndex(x=>/total|nominal|value|nilai|rupiah|\brp\b|harga/i.test(x)&&!/kelurahan|pilih|bulan|receipt|member|alamat/i.test(x));
  if(iV<0){const st=Math.max(...kel);for(let i=h.length-1;i>st&&iV<0;i--)if(rows.slice(1).some(r=>r[i]&&!isNaN(num(r[i]))))iV=i}
  VALH=iV>=0?LBL[iV]:'';
- return rows.slice(1).filter(r=>r[0]&&r[0].trim()).map(r=>({ts:r[0].trim(),d:pd(r[0]),day:r[0].trim().slice(0,10),rc:(r[iR]||'').trim(),kota:(r[iK]||'').trim(),kec:fs(r,kec),nm:(r[iN]||'').trim(),al:(r[iA]||'').trim(),kel:fs(r,kel),val:iV>=0&&r[iV]&&r[iV].trim()?num(r[iV]):null}))}
+ return rows.slice(1).filter(r=>r[0]&&r[0].trim()).map(r=>({ts:r[0].trim(),d:pd(r[0]),day:r[0].trim().slice(0,10),rc:(r[iR]||'').trim(),kota:(r[iK]||'').trim(),kec:fs(r,kec),nm:(r[iN]||'').trim(),al:(r[iA]||'').trim(),kel:fs(r,kel),bln:iB>=0?(r[iB]||'').trim():'',val:iV>=0&&r[iV]&&r[iV].trim()?num(r[iV]):null}))}
 function sumTotals(txt){const rows=parseCSV(txt),keys=new Set(DATA.map(x=>nz(x.rc)).filter(Boolean));let hi=-1,ti=-1;
  for(const re of[/^\s*total\s*$/i,/total|nominal|value|nilai/i])for(let i=0;i<Math.min(rows.length,20)&&hi<0;i++){const j=rows[i].findIndex(c=>re.test(c));if(j>=0){hi=i;ti=j}}
  if(ti<0)throw new Error('kolom Total tidak ditemukan');const m={};let n=0;
  rows.slice(hi+1).forEach(r=>{const k=r.map(nz).find(c=>keys.has(c));if(!k)return;const v=num(r[ti]);if(isNaN(v))return;m[k]=(m[k]||0)+v;n++});
  INFO=n+' baris cocok';return m}
-function enrich(){if(!TOT&&DATA.some(x=>x.val!=null&&!isNaN(x.val)))TOT={};const s=new Set();DATA.forEach(x=>{const k=nz(x.rc);x.tot=x.val!=null&&!isNaN(x.val)?x.val:(TOT&&k in TOT?TOT[k]:null);x.cnt=x.tot!=null&&!s.has(k);s.add(k)})}
+const BN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+function mkey(s){const l=String(s).toLowerCase();let m=BN.findIndex(n=>l.includes(n.toLowerCase()));if(m<0)m=['jan','feb','mar','apr','mei','jun','jul','agu','sep','okt','nov','des'].findIndex(n=>l.includes(n));const y=/(20\d\d)/.exec(l);return(y?+y[1]:0)*100+(m+1)}
+const yr=x=>{const k=mkey(x.bl);return k>=200000?String(Math.floor(k/100)):(x.d.getTime()?String(x.d.getFullYear()):'')};
+function bl(x){if(x.bln)return x.bln;const m=/\.(\d{2})(\d{2})(\d{2})\./.exec(x.rc);return m&&+m[2]>=1&&+m[2]<=12?BN[+m[2]-1]+' 20'+m[1]:'-'}
+function enrich(){if(!TOT&&DATA.some(x=>x.val!=null&&!isNaN(x.val)))TOT={};const s=new Set();DATA.forEach(x=>{x.bl=bl(x);const k=nz(x.rc);x.tot=x.val!=null&&!isNaN(x.val)?x.val:(TOT&&k in TOT?TOT[k]:null);x.cnt=x.tot!=null&&!s.has(k);s.add(k)})}
 const agg=(a,f,m)=>{const o={};a.forEach(x=>{const k=f(x)||'-';o[k]=(o[k]||0)+(m=='r'?(x.cnt?x.tot:0):1)});return Object.entries(o).sort((a,b)=>b[1]-a[1])};
 function bars(el,e,n,fm,key){const t=e.filter(v=>v[1]>0).slice(0,n),mx=t[0]?t[0][1]:1;
  $(el).innerHTML=t.length?t.map(([k,v])=>`<div class="b${F[key]===k?' on':''}" data-k="${key}" data-v="${esc(k)}"><span title="${esc(k)}">${esc(k)}</span><div class="tr"><div class="fl" style="width:${v/mx*100}%"></div></div><span>${fm?fm(v):v}</span></div>`).join(''):'<div class="em">'+(MET=='r'&&!TOT?'Nilai belanja belum terbaca':'Tidak ada data')+'</div>'}
 function fill(id,l,lab,v){$(id).innerHTML=`<option value="">${lab}</option>`+l.map(x=>`<option${x==v?' selected':''}>${esc(x)}</option>`).join('')}
 const uniq=f=>[...new Set(DATA.map(f).filter(Boolean))].sort();
 function render(){enrich();
- const d=DATA.filter(x=>(!F.kota||x.kota==F.kota)&&(!F.kec||x.kec==F.kec)&&(!F.kel||x.kel==F.kel)&&(!F.day||x.day==F.day)&&(!F.cust||x.nm==F.cust)&&(!F.q||(x.nm+x.rc+x.al+x.kec+x.kel).toLowerCase().includes(F.q)));
- fill('fK',uniq(x=>x.kota),'Semua kota/kab',F.kota);fill('fC',uniq(x=>x.kec),'Semua kecamatan',F.kec);fill('fH',[...new Set(DATA.map(x=>x.day))].sort((a,b)=>pd(b+' 0:0:0')-pd(a+' 0:0:0')),'Semua hari',F.day);
+ const d=DATA.filter(x=>(!F.kota||x.kota==F.kota)&&(!F.kec||x.kec==F.kec)&&(!F.kel||x.kel==F.kel)&&(!F.day||x.day==F.day)&&(!F.bln||x.bl==F.bln)&&(!F.thn||yr(x)==F.thn)&&(!F.cust||x.nm==F.cust)&&(!F.q||(x.nm+x.rc+x.al+x.kec+x.kel).toLowerCase().includes(F.q)));
+ fill('fK',uniq(x=>x.kota),'Semua kota/kab',F.kota);fill('fC',uniq(x=>x.kec),'Semua kecamatan',F.kec);fill('fT',[...new Set(DATA.map(yr))].filter(v=>v).sort().reverse(),'Semua tahun belanja',F.thn);fill('fB',[...new Set(DATA.filter(x=>!F.thn||yr(x)==F.thn).map(x=>x.bl))].filter(v=>v!='-').sort((a,b)=>mkey(b)-mkey(a)),'Semua bulan belanja',F.bln);
  $('ch').innerHTML=Object.entries(F).filter(([k,v])=>v).map(([k,v])=>`<span class="chip" data-x="${k}">${k}: ${esc(v)} ✕</span>`).join('');
  const ok=d.filter(x=>x.cnt),sum=ok.reduce((a,x)=>a+x.tot,0),nr=new Set(d.map(x=>nz(x.rc))).size,ms=new Set(d.filter(x=>TOT&&x.tot==null).map(x=>nz(x.rc))).size,
  dup=agg(d,x=>x.rc,'n').filter(e=>e[1]>1).length,tdy=new Date().toLocaleDateString('en-GB');
@@ -119,12 +123,12 @@ function render(){enrich();
  $('kpi').innerHTML=K.map(([l,v])=>`<div class="cd"><div class="kv" style="${String(v).length>10?'font-size:17px;padding:5px 0':''}">${esc(v)}</div><div class="kl">${l}</div></div>`).join('');
  const fm=MET=='r'?rpS:null;
  bars('cT',agg(d,x=>x.nm,TOT?'r':'n'),8,TOT?rpS:null,'cust');bars('cK',agg(d,x=>x.kota,MET),6,fm,'kota');
- bars('cD',agg(d,x=>x.day,MET).sort((a,b)=>pd(b[0]+' 0:0:0')-pd(a[0]+' 0:0:0')),7,fm,'day');bars('cC',agg(d,x=>x.kec,MET),8,fm,'kec');bars('cL',agg(d,x=>x.kel,MET),8,fm,'kel');
+ bars('cD',agg(d,x=>x.day,MET).sort((a,b)=>pd(b[0]+' 0:0:0')-pd(a[0]+' 0:0:0')),7,fm,'day');bars('cC',agg(d,x=>x.kec,MET),8,fm,'kec');bars('cB',agg(d,x=>x.bl,MET).sort((a,b)=>mkey(b[0])-mkey(a[0])),12,fm,'bln');bars('cL',agg(d,x=>x.kel,MET),8,fm,'kel');
  const cu={};d.forEach(x=>{const o=cu[x.nm||'-']||(cu[x.nm||'-']={n:0,t:0,c:0});o.n++;if(x.cnt){o.t+=x.tot;o.c++}});
  $('tc').innerHTML=Object.entries(cu).sort((a,b)=>b[1].t-a[1].t||b[1].n-a[1].n).slice(0,60).map(([k,o])=>`<tr data-k="cust" data-v="${esc(k)}" class="${F.cust==k?'on':''}" style="cursor:pointer"><td>${esc(k)}</td><td>${o.n}</td><td class="n">${TOT?(o.c?rp(o.t):'-'):'-'}</td></tr>`).join('');
- const dp=new Set(agg(DATA,x=>x.rc,'n').filter(e=>e[1]>1).map(e=>e[0])),sv=x=>SORT.k=='ts'?x.d:SORT.k=='tot'?(x.tot??-1):String(x[SORT.k]||'').toLowerCase();
+ const dp=new Set(agg(DATA,x=>x.rc,'n').filter(e=>e[1]>1).map(e=>e[0])),sv=x=>SORT.k=='ts'?x.d:SORT.k=='bl'?mkey(x.bl):SORT.k=='tot'?(x.tot??-1):String(x[SORT.k]||'').toLowerCase();
  const rows=[...d].sort((a,b)=>(sv(a)>sv(b)?1:sv(a)<sv(b)?-1:0)*SORT.d);window.ROWS=rows;$('cn').textContent='('+rows.length+')';
- $('tb').innerHTML=rows.slice(0,LIM).map(x=>`<tr><td>${esc(x.ts)}</td><td>${esc(x.rc)}${dp.has(x.rc)?' <span class="tag">dobel</span>':''}</td><td>${esc(x.nm)}</td><td>${esc(x.kota)}</td><td>${esc(x.kec)}</td><td>${esc(x.kel)}</td><td class="n">${x.tot!=null?rp(x.tot):(TOT?'<span class="tag">kosong</span>':'-')}</td><td>${esc(x.al)}</td></tr>`).join('')||'<tr><td colspan="8" class="em">Tidak ada data</td></tr>';
+ $('tb').innerHTML=rows.slice(0,LIM).map(x=>`<tr><td>${esc(x.ts)}</td><td>${esc(x.rc)}${dp.has(x.rc)?' <span class="tag">dobel</span>':''}</td><td>${esc(x.bl)}</td><td>${esc(x.nm)}</td><td>${esc(x.kota)}</td><td>${esc(x.kec)}</td><td>${esc(x.kel)}</td><td class="n">${x.tot!=null?rp(x.tot):(TOT?'<span class="tag">kosong</span>':'-')}</td><td>${esc(x.al)}</td></tr>`).join('')||'<tr><td colspan="9" class="em">Tidak ada data</td></tr>';
  $('mo').hidden=rows.length<=LIM;
  $('cV').innerHTML='<option value="">(otomatis)</option>'+LBL.map(l=>`<option${l==CFG.vc?' selected':''}>${esc(l)}</option>`).join('')}
 function st(on,m){$('dot').className='dot'+(on?' on':'');$('stx').textContent=m}
@@ -139,17 +143,17 @@ const R=()=>{LIM=15;render()};
 document.addEventListener('click',e=>{let t=e.target.closest('[data-k]');if(t){const k=t.dataset.k,v=t.dataset.v;F[k]=F[k]===v?'':v;return R()}
  t=e.target.closest('[data-x]');if(t){F[t.dataset.x]='';if(t.dataset.x=='q')$('q').value='';return R()}
  t=e.target.closest('[data-s]');if(t){SORT={k:t.dataset.s,d:SORT.k==t.dataset.s?-SORT.d:-1};render()}});
-$('q').oninput=e=>{F.q=e.target.value.toLowerCase();R()};$('fK').onchange=e=>{F.kota=e.target.value;R()};$('fC').onchange=e=>{F.kec=e.target.value;R()};$('fH').onchange=e=>{F.day=e.target.value;R()};
+$('q').oninput=e=>{F.q=e.target.value.toLowerCase();R()};$('fK').onchange=e=>{F.kota=e.target.value;R()};$('fC').onchange=e=>{F.kec=e.target.value;R()};$('fT').onchange=e=>{F.thn=e.target.value;if(F.bln&&F.thn&&!DATA.some(x=>x.bl==F.bln&&yr(x)==F.thn))F.bln='';R()};
 $('mt').onchange=e=>{MET=e.target.value;render()};$('mo').onclick=()=>{LIM+=20;render()};$('rf').onclick=()=>{LOCK=false;load()};
 $('sg').onclick=()=>{$('cId').value=CFG.id;$('cS1').value=CFG.s1;$('cS2').value=CFG.s2;$('cSec').value=CFG.sec;$('sp').hidden=!$('sp').hidden};
 $('sv').onclick=()=>{CFG.id=$('cId').value.trim();CFG.s1=$('cS1').value.trim();CFG.s2=$('cS2').value.trim();CFG.sec=+$('cSec').value||30;CFG.vc=$('cV').value;LS.s('cfg',JSON.stringify(CFG));LOCK=false;clearInterval(TM);TM=setInterval(load,CFG.sec*1000);load()};
 $('i1').onclick=()=>{IMP='1';$('fi').click()};$('i2').onclick=()=>{IMP='2';$('fi').click()};
 $('fi').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{if(IMP=='1'){DATA=fromCSV(rd.result);LOCK=true;st(0,'Data dari file impor (auto-refresh dimatikan) • nilai: '+(VALH||'belum terdeteksi'))}else{TOT=sumTotals(rd.result);st(0,'Impor belanja: '+INFO)}}catch(x){st(0,'Gagal impor: '+x.message)}render()};rd.readAsText(f);e.target.value=''};
-$('ex').onclick=()=>{const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',L=[['Waktu','Receipt','Customer','Kota','Kecamatan','Kelurahan','Total Belanja','Alamat'].map(q).join(',')].concat((window.ROWS||[]).map(x=>[x.ts,x.rc,x.nm,x.kota,x.kec,x.kel,x.tot??'',x.al].map(q).join(',')));
+$('ex').onclick=()=>{const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',L=[['Waktu','Receipt','Bulan Belanja','Customer','Kota','Kecamatan','Kelurahan','Total Belanja','Alamat'].map(q).join(',')].concat((window.ROWS||[]).map(x=>[x.ts,x.rc,x.bl,x.nm,x.kota,x.kec,x.kel,x.tot??'',x.al].map(q).join(',')));
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+L.join('\n')],{type:'text/csv'}));a.download='pengiriman-filter.csv';a.click()};
 $('lk').value='https://docs.google.com/spreadsheets/d/'+CFG.id+'/edit';
 function setLink(){const m=/\/d\/([a-zA-Z0-9_-]{20,})/.exec($('lk').value);if(!m){st(0,'Link tidak valid. Contoh: https://docs.google.com/spreadsheets/d/XXXX/edit');return}
- CFG.id=m[1];LS.s('cfg',JSON.stringify(CFG));LOCK=false;LIVE=false;TOT=null;F={q:'',kota:'',kec:'',day:'',kel:'',cust:''};$('q').value='';st(0,'Memuat data…');load()}
+ CFG.id=m[1];LS.s('cfg',JSON.stringify(CFG));LOCK=false;LIVE=false;TOT=null;F={q:'',kota:'',kec:'',day:'',bln:'',thn:'',kel:'',cust:''};$('q').value='';st(0,'Memuat data…');load()}
 $('ok').onclick=setLink;$('lk').onkeydown=e=>{if(e.key=='Enter')setLink()};
 load();TM=setInterval(load,CFG.sec*1000);
 </script></body></html>
