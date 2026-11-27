@@ -28,14 +28,12 @@ th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--bd)}th{color
 [hidden]{display:none!important}
 </style></head><body><div class="w">
 <header><div><h1>📦 Dashboard Pengiriman &amp; Belanja</h1><div class="st"><span class="dot" id="dot"></span><span id="stx">Memuat…</span></div></div>
-<div class="bt"><button id="rf">⟳ Refresh</button><button class="g2" id="sg">⚙ Pengaturan</button><button class="g2" id="i1">Impor CSV Pengiriman</button><button class="g2" id="i2">Impor CSV Belanja</button><button class="g2" id="ex">⬇ Ekspor CSV</button></div></header>
-<input type="file" id="fi" accept=".csv,text/csv" hidden>
-<div class="cd bar"><b>🔗 Link Spreadsheet</b><input id="lk" placeholder="Tempel link Google Spreadsheet di sini, lalu klik OK…" style="flex:1;min-width:240px"><button id="ok">OK / Muat Data</button></div>
+<div class="bt"><button id="rf">⟳ Refresh</button><button class="g2" id="sg">⚙ Pengaturan</button></div></header>
 <div class="cd" id="sp" hidden><h2>Pengaturan</h2><div class="sp">
-<div><label>ID Spreadsheet</label><input id="cId"></div><div><label>Nama tab pengiriman</label><input id="cS1"></div><div><label>Nama tab belanja (opsional)</label><input id="cS2"></div>
+<div><label>Nama tab pengiriman</label><input id="cS1"></div><div><label>Nama tab belanja (opsional)</label><input id="cS2"></div>
 <div><label>Auto-refresh (detik)</label><input id="cSec" type="number" min="10"></div><div><label>Kolom nilai belanja (di tab pengiriman)</label><select id="cV"></select></div></div>
 <div style="margin-top:10px"><button id="sv">Simpan &amp; muat ulang</button></div></div>
-<div class="cd bar"><input id="q" placeholder="🔍 Cari nama / receipt / alamat…"><select id="fK"></select><select id="fC"></select><select id="fT"></select><select id="fB"></select>
+<div class="cd bar"><input id="q" placeholder="🔍 Cari nama / receipt / alamat…"><select id="fK"></select><select id="fC"></select><select id="fL"></select><select id="fT"></select><select id="fB"></select>
 <select id="mt"><option value="n">Grafik: jumlah pengiriman</option><option value="r">Grafik: Rp belanja</option></select><span id="ch" class="bar"></span></div>
 <div class="g k" id="kpi"></div>
 <div class="g c2"><div class="cd"><h2>Top Customer</h2><div id="cT"></div></div><div class="cd"><h2>Kota / Kabupaten</h2><div id="cK"></div></div></div>
@@ -48,6 +46,7 @@ th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--bd)}th{color
 <script>
 const $=id=>document.getElementById(id),LS={g:k=>{try{return localStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 const CFG=Object.assign({id:'1GZd_o0CUXiTLldW524EeqccTuUUd6qXzIenIKU1gAMc',s1:'Form Responses 1',s2:'Copas belanja',sec:30,vc:''},JSON.parse(LS.g('cfg')||'{}'));
+CFG.id='1GZd_o0CUXiTLldW524EeqccTuUUd6qXzIenIKU1gAMc';
 const KOTA={T:'Kota Tasikmalaya',KT:'Kab. Tasikmalaya',KC:'Kab. Ciamis'};
 const mk=(ts,rc,k,kec,nm,al,kel)=>({ts,d:pd(ts),day:ts.slice(0,10),rc,kota:KOTA[k],kec,nm,al,kel,bln:'',val:null});
 function pd(s){const m=/(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):(\d+)/.exec(s);return m?new Date(+m[3],m[2]-1,+m[1],+m[4],+m[5],+m[6]):new Date(0)}
@@ -115,7 +114,7 @@ function fill(id,l,lab,v){$(id).innerHTML=`<option value="">${lab}</option>`+l.m
 const uniq=f=>[...new Set(DATA.map(f).filter(Boolean))].sort();
 function render(){enrich();
  const d=DATA.filter(x=>(!F.kota||x.kota==F.kota)&&(!F.kec||x.kec==F.kec)&&(!F.kel||x.kel==F.kel)&&(!F.day||x.day==F.day)&&(!F.bln||x.bl==F.bln)&&(!F.thn||yr(x)==F.thn)&&(!F.cust||x.nm==F.cust)&&(!F.q||(x.nm+x.rc+x.al+x.kec+x.kel).toLowerCase().includes(F.q)));
- fill('fK',uniq(x=>x.kota),'Semua kota/kab',F.kota);fill('fC',uniq(x=>x.kec),'Semua kecamatan',F.kec);fill('fT',[...new Set(DATA.map(yr))].filter(v=>v).sort().reverse(),'Semua tahun belanja',F.thn);fill('fB',[...new Set(DATA.filter(x=>!F.thn||yr(x)==F.thn).map(x=>x.bl))].filter(v=>v!='-').sort((a,b)=>mkey(b)-mkey(a)),'Semua bulan belanja',F.bln);
+ fill('fK',uniq(x=>x.kota),'Semua kota/kab',F.kota);fill('fC',uniq(x=>x.kec),'Semua kecamatan',F.kec);fill('fL',[...new Set(DATA.filter(x=>!F.kec||x.kec==F.kec).map(x=>x.kel))].filter(v=>v).sort(),'Semua kelurahan',F.kel);fill('fT',[...new Set(DATA.map(yr))].filter(v=>v).sort().reverse(),'Semua tahun belanja',F.thn);fill('fB',[...new Set(DATA.filter(x=>!F.thn||yr(x)==F.thn).map(x=>x.bl))].filter(v=>v!='-').sort((a,b)=>mkey(b)-mkey(a)),'Semua bulan belanja',F.bln);
  $('ch').innerHTML=Object.entries(F).filter(([k,v])=>v).map(([k,v])=>`<span class="chip" data-x="${k}">${k}: ${esc(v)} ✕</span>`).join('');
  const ok=d.filter(x=>x.cnt),sum=ok.reduce((a,x)=>a+x.tot,0),nr=new Set(d.map(x=>nz(x.rc))).size,ms=new Set(d.filter(x=>TOT&&x.tot==null).map(x=>nz(x.rc))).size,
  dup=agg(d,x=>x.rc,'n').filter(e=>e[1]>1).length,tdy=new Date().toLocaleDateString('en-GB');
@@ -137,24 +136,17 @@ async function load(){if(LOCK)return;
  try{const r=await fetch(U(CFG.s1),{cache:'no-store'});if(!r.ok)throw 0;DATA=fromCSV(await r.text());LIVE=true;let ti='';
   if(CFG.s2)try{const r2=await fetch(U(CFG.s2),{cache:'no-store'});if(!r2.ok)throw 0;TOT=sumTotals(await r2.text());ti=' • tab belanja: '+INFO}catch(e){TOT=null}
   st(1,'Live '+new Date().toLocaleTimeString('id-ID')+(VALH?' • nilai belanja dari kolom "'+VALH+'"':TOT?'':' • nilai belanja TIDAK terdeteksi → pilih kolom di ⚙ Pengaturan')+ti)}
- catch(e){st(0,LIVE?'Gagal refresh, memakai data terakhir':'Gagal mengambil data. Pastikan spreadsheet dibagikan ke \u201cAnyone with the link\u201d, dan file ini dibuka langsung di browser (bukan preview chat). Alternatif: tombol Impor CSV')}
+ catch(e){st(0,LIVE?'Gagal refresh, memakai data terakhir':'Gagal mengambil data. Pastikan spreadsheet dibagikan ke \u201cAnyone with the link\u201d, dan file ini dibuka langsung di browser (bukan preview chat). Coba muat ulang halaman beberapa saat lagi')}
  render()}
 const R=()=>{LIM=15;render()};
 document.addEventListener('click',e=>{let t=e.target.closest('[data-k]');if(t){const k=t.dataset.k,v=t.dataset.v;F[k]=F[k]===v?'':v;return R()}
  t=e.target.closest('[data-x]');if(t){F[t.dataset.x]='';if(t.dataset.x=='q')$('q').value='';return R()}
  t=e.target.closest('[data-s]');if(t){SORT={k:t.dataset.s,d:SORT.k==t.dataset.s?-SORT.d:-1};render()}});
-$('q').oninput=e=>{F.q=e.target.value.toLowerCase();R()};$('fK').onchange=e=>{F.kota=e.target.value;R()};$('fC').onchange=e=>{F.kec=e.target.value;R()};$('fB').onchange=e=>{F.bln=e.target.value;R()};
+$('q').oninput=e=>{F.q=e.target.value.toLowerCase();R()};$('fK').onchange=e=>{F.kota=e.target.value;R()};$('fC').onchange=e=>{F.kec=e.target.value;if(F.kel&&F.kec&&!DATA.some(x=>x.kel==F.kel&&x.kec==F.kec))F.kel='';R()};
+$('fL').onchange=e=>{F.kel=e.target.value;R()};$('fB').onchange=e=>{F.bln=e.target.value;R()};
 $('fT').onchange=e=>{F.thn=e.target.value;if(F.bln&&F.thn&&!DATA.some(x=>x.bl==F.bln&&yr(x)==F.thn))F.bln='';R()};
 $('mt').onchange=e=>{MET=e.target.value;render()};$('mo').onclick=()=>{LIM+=20;render()};$('rf').onclick=()=>{LOCK=false;load()};
-$('sg').onclick=()=>{$('cId').value=CFG.id;$('cS1').value=CFG.s1;$('cS2').value=CFG.s2;$('cSec').value=CFG.sec;$('sp').hidden=!$('sp').hidden};
-$('sv').onclick=()=>{CFG.id=$('cId').value.trim();CFG.s1=$('cS1').value.trim();CFG.s2=$('cS2').value.trim();CFG.sec=+$('cSec').value||30;CFG.vc=$('cV').value;LS.s('cfg',JSON.stringify(CFG));LOCK=false;clearInterval(TM);TM=setInterval(load,CFG.sec*1000);load()};
-$('i1').onclick=()=>{IMP='1';$('fi').click()};$('i2').onclick=()=>{IMP='2';$('fi').click()};
-$('fi').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{if(IMP=='1'){DATA=fromCSV(rd.result);LOCK=true;st(0,'Data dari file impor (auto-refresh dimatikan) • nilai: '+(VALH||'belum terdeteksi'))}else{TOT=sumTotals(rd.result);st(0,'Impor belanja: '+INFO)}}catch(x){st(0,'Gagal impor: '+x.message)}render()};rd.readAsText(f);e.target.value=''};
-$('ex').onclick=()=>{const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',L=[['Waktu','Receipt','Bulan Belanja','Customer','Kota','Kecamatan','Kelurahan','Total Belanja','Alamat'].map(q).join(',')].concat((window.ROWS||[]).map(x=>[x.ts,x.rc,x.bl,x.nm,x.kota,x.kec,x.kel,x.tot??'',x.al].map(q).join(',')));
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+L.join('\n')],{type:'text/csv'}));a.download='pengiriman-filter.csv';a.click()};
-$('lk').value='https://docs.google.com/spreadsheets/d/'+CFG.id+'/edit';
-function setLink(){const m=/\/d\/([a-zA-Z0-9_-]{20,})/.exec($('lk').value);if(!m){st(0,'Link tidak valid. Contoh: https://docs.google.com/spreadsheets/d/XXXX/edit');return}
- CFG.id=m[1];LS.s('cfg',JSON.stringify(CFG));LOCK=false;LIVE=false;TOT=null;F={q:'',kota:'',kec:'',day:'',bln:'',thn:'',kel:'',cust:''};$('q').value='';st(0,'Memuat data…');load()}
-$('ok').onclick=setLink;$('lk').onkeydown=e=>{if(e.key=='Enter')setLink()};
+$('sg').onclick=()=>{$('cS1').value=CFG.s1;$('cS2').value=CFG.s2;$('cSec').value=CFG.sec;$('sp').hidden=!$('sp').hidden};
+$('sv').onclick=()=>{CFG.s1=$('cS1').value.trim();CFG.s2=$('cS2').value.trim();CFG.sec=+$('cSec').value||30;CFG.vc=$('cV').value;LS.s('cfg',JSON.stringify(CFG));LOCK=false;clearInterval(TM);TM=setInterval(load,CFG.sec*1000);load()};
 load();TM=setInterval(load,CFG.sec*1000);
 </script></body></html>
