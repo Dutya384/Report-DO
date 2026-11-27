@@ -38,7 +38,7 @@ th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--bd)}th{color
 <div class="g k" id="kpi"></div>
 <div class="g c2"><div class="cd"><h2>Top Customer</h2><div id="cT"></div></div><div class="cd"><h2>Kota / Kabupaten</h2><div id="cK"></div></div></div>
 <div class="g c2"><div class="cd"><h2>Per Hari</h2><div id="cD"></div></div><div class="cd"><h2>Top Kecamatan</h2><div id="cC"></div></div><div class="cd"><h2>Bulan Pembelanjaan</h2><div id="cB"></div></div></div>
-<div class="g c2"><div class="cd"><h2>Top Kelurahan</h2><div id="cL"></div></div>
+<div class="g c2"><div class="cd"><h2 id="hL">Top Kelurahan</h2><div id="cL"></div></div>
 <div class="cd"><h2>Rekap Pelanggan (klik untuk filter)</h2><div class="tw" style="max-height:260px;overflow:auto"><table style="min-width:0"><thead><tr><th>Customer</th><th>Kirim</th><th class="n">Total Belanja</th></tr></thead><tbody id="tc"></tbody></table></div></div></div>
 <div class="cd"><h2>Data Pengiriman <span id="cn"></span></h2><div class="tw"><table><thead><tr><th data-s="ts">Waktu</th><th data-s="rc">Receipt</th><th data-s="bl">Bulan Belanja</th><th data-s="nm">Customer</th><th data-s="kota">Kota/Kab</th><th data-s="kec">Kecamatan</th><th data-s="kel">Kelurahan</th><th data-s="tot" class="n">Total Belanja</th><th data-s="al">Alamat</th></tr></thead><tbody id="tb"></tbody></table></div>
 <div style="margin-top:8px"><button class="g2" id="mo">Tampilkan lebih banyak</button></div></div>
@@ -108,7 +108,7 @@ const yr=x=>{const k=mkey(x.bl);return k>=200000?String(Math.floor(k/100)):(x.d.
 function bl(x){if(x.bln)return x.bln;const m=/\.(\d{2})(\d{2})(\d{2})\./.exec(x.rc);return m&&+m[2]>=1&&+m[2]<=12?BN[+m[2]-1]+' 20'+m[1]:'-'}
 function enrich(){if(!TOT&&DATA.some(x=>x.val!=null&&!isNaN(x.val)))TOT={};const s=new Set();DATA.forEach(x=>{x.bl=bl(x);const k=nz(x.rc);x.tot=x.val!=null&&!isNaN(x.val)?x.val:(TOT&&k in TOT?TOT[k]:null);x.cnt=x.tot!=null&&!s.has(k);s.add(k)})}
 const agg=(a,f,m)=>{const o={};a.forEach(x=>{const k=f(x)||'-';o[k]=(o[k]||0)+(m=='r'?(x.cnt?x.tot:0):1)});return Object.entries(o).sort((a,b)=>b[1]-a[1])};
-function bars(el,e,n,fm,key){const t=e.filter(v=>v[1]>0).slice(0,n),mx=t[0]?t[0][1]:1;
+function bars(el,e,n,fm,key,z){const t=(z?e:e.filter(v=>v[1]>0)).slice(0,n),mx=t[0]?t[0][1]||1:1;
  $(el).innerHTML=t.length?t.map(([k,v])=>`<div class="b${F[key]===k?' on':''}" data-k="${key}" data-v="${esc(k)}"><span title="${esc(k)}">${esc(k)}</span><div class="tr"><div class="fl" style="width:${v/mx*100}%"></div></div><span>${fm?fm(v):v}</span></div>`).join(''):'<div class="em">'+(MET=='r'&&!TOT?'Nilai belanja belum terbaca':'Tidak ada data')+'</div>'}
 function fill(id,l,lab,v){$(id).innerHTML=`<option value="">${lab}</option>`+l.map(x=>`<option${x==v?' selected':''}>${esc(x)}</option>`).join('')}
 const uniq=f=>[...new Set(DATA.map(f).filter(Boolean))].sort();
@@ -122,7 +122,9 @@ function render(){enrich();
  $('kpi').innerHTML=K.map(([l,v])=>`<div class="cd"><div class="kv" style="${String(v).length>10?'font-size:17px;padding:5px 0':''}">${esc(v)}</div><div class="kl">${l}</div></div>`).join('');
  const fm=MET=='r'?rpS:null;
  bars('cT',agg(d,x=>x.nm,TOT?'r':'n'),8,TOT?rpS:null,'cust');bars('cK',agg(d,x=>x.kota,MET),6,fm,'kota');
- bars('cD',agg(d,x=>x.day,MET).sort((a,b)=>pd(b[0]+' 0:0:0')-pd(a[0]+' 0:0:0')),7,fm,'day');bars('cC',agg(d,x=>x.kec,MET),8,fm,'kec');bars('cB',agg(d,x=>x.bl,MET).sort((a,b)=>mkey(b[0])-mkey(a[0])),12,fm,'bln');bars('cL',agg(d,x=>x.kel,MET),8,fm,'kel');
+ bars('cD',agg(d,x=>x.day,MET).sort((a,b)=>pd(b[0]+' 0:0:0')-pd(a[0]+' 0:0:0')),7,fm,'day');bars('cC',agg(d,x=>x.kec,MET),8,fm,'kec');bars('cB',agg(d,x=>x.bl,MET).sort((a,b)=>mkey(b[0])-mkey(a[0])),12,fm,'bln');const el=agg(d,x=>x.kel,MET);
+ if(F.kec){const hv=new Set(el.map(e=>e[0]));[...new Set(DATA.filter(x=>x.kec==F.kec).map(x=>x.kel))].filter(k=>k&&!hv.has(k)).forEach(k=>el.push([k,0]))}
+ bars('cL',el,F.kec?80:8,fm,'kel',!!F.kec);$('hL').textContent=F.kec?'Semua Kelurahan di Kec. '+F.kec+' ('+el.length+')':'Top Kelurahan';$('cL').style.cssText=F.kec?'max-height:340px;overflow:auto':'';
  const cu={};d.forEach(x=>{const o=cu[x.nm||'-']||(cu[x.nm||'-']={n:0,t:0,c:0});o.n++;if(x.cnt){o.t+=x.tot;o.c++}});
  $('tc').innerHTML=Object.entries(cu).sort((a,b)=>b[1].t-a[1].t||b[1].n-a[1].n).slice(0,60).map(([k,o])=>`<tr data-k="cust" data-v="${esc(k)}" class="${F.cust==k?'on':''}" style="cursor:pointer"><td>${esc(k)}</td><td>${o.n}</td><td class="n">${TOT?(o.c?rp(o.t):'-'):'-'}</td></tr>`).join('');
  const dp=new Set(agg(DATA,x=>x.rc,'n').filter(e=>e[1]>1).map(e=>e[0])),sv=x=>SORT.k=='ts'?x.d:SORT.k=='bl'?mkey(x.bl):SORT.k=='tot'?(x.tot??-1):String(x[SORT.k]||'').toLowerCase();
