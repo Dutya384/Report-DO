@@ -143,7 +143,8 @@ const R=()=>{LIM=15;render()};
 document.addEventListener('click',e=>{let t=e.target.closest('[data-k]');if(t){const k=t.dataset.k,v=t.dataset.v;F[k]=F[k]===v?'':v;return R()}
  t=e.target.closest('[data-x]');if(t){F[t.dataset.x]='';if(t.dataset.x=='q')$('q').value='';return R()}
  t=e.target.closest('[data-s]');if(t){SORT={k:t.dataset.s,d:SORT.k==t.dataset.s?-SORT.d:-1};render()}});
-$('q').oninput=e=>{F.q=e.target.value.toLowerCase();R()};$('fK').onchange=e=>{F.kota=e.target.value;R()};$('fC').onchange=e=>{F.kec=e.target.value;R()};$('fT').onchange=e=>{F.thn=e.target.value;if(F.bln&&F.thn&&!DATA.some(x=>x.bl==F.bln&&yr(x)==F.thn))F.bln='';R()};
+$('q').oninput=e=>{F.q=e.target.value.toLowerCase();R()};$('fK').onchange=e=>{F.kota=e.target.value;R()};$('fC').onchange=e=>{F.kec=e.target.value;R()};$('fB').onchange=e=>{F.bln=e.target.value;R()};
+$('fT').onchange=e=>{F.thn=e.target.value;if(F.bln&&F.thn&&!DATA.some(x=>x.bl==F.bln&&yr(x)==F.thn))F.bln='';R()};
 $('mt').onchange=e=>{MET=e.target.value;render()};$('mo').onclick=()=>{LIM+=20;render()};$('rf').onclick=()=>{LOCK=false;load()};
 $('sg').onclick=()=>{$('cId').value=CFG.id;$('cS1').value=CFG.s1;$('cS2').value=CFG.s2;$('cSec').value=CFG.sec;$('sp').hidden=!$('sp').hidden};
 $('sv').onclick=()=>{CFG.id=$('cId').value.trim();CFG.s1=$('cS1').value.trim();CFG.s2=$('cS2').value.trim();CFG.sec=+$('cSec').value||30;CFG.vc=$('cV').value;LS.s('cfg',JSON.stringify(CFG));LOCK=false;clearInterval(TM);TM=setInterval(load,CFG.sec*1000);load()};
